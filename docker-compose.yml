@@ -1,0 +1,29 @@
+version: '2.3'
+
+services:
+  toyrl:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: toyrl-torch
+    #container_name: toyrl-torch
+    environment:
+      PYTHONPATH: /src
+      VERSION: "0.1"
+    volumes:
+      - ${input_dir:-./temp/inputs}:/workspace/inputs/:ro
+      - ${output_dir:-./temp/outputs/}:/workspace/outputs/
+      - ./temp:/workspace/temp
+      - ./src/:/src:ro
+      - ${local_config_path:-./configs}:/workspace/configs:ro
+    working_dir: "/workspace"
+    entrypoint: "bash -c 'jupyter lab --no-browser --ip=0.0.0.0 --port=${notebook_port:-18888} --allow-root --NotebookApp.password=${notebook_pw}'"
+    #entrypoint: "python -c 'import torch; print(torch.cuda.is_available())'"
+    ports:
+      - "${notebook_ip:-0.0.0.0}:${notebook_port:-18888}:${notebook_port:-18888}"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities:
+              - gpu
