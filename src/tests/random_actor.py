@@ -23,7 +23,7 @@ class TestCase_RandomPlayer_Plays_RememberTheNumber(unittest.TestCase):
         Assert the game can be won, but is not won every time by a random actor
         """
         game = RememberTheNumber()
-        player = RandomActor(action_space=(1,))
+        player = RandomActor(action_space=game.get_action_space())
         games_to_play = 1000
         scores = [
             game.act(player.get_action(observations=None)) for _ in range(games_to_play)
