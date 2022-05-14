@@ -2,7 +2,7 @@ import torch
 
 
 class TinyValueNN:
-    def __init__(self, input_len: int, starting_learning_rate=3e-3, weight_decay=1e-5):
+    def __init__(self, input_len: int, starting_learning_rate=5e-2, weight_decay=1e-5):
         self.model = torch.nn.Sequential(
             torch.nn.Linear(in_features=input_len, out_features=4),
             torch.nn.LeakyReLU(),
