@@ -4,7 +4,6 @@ import torch
 
 
 class RandomActor:
-
     def __init__(self, action_space: List[int]):
         self.action_space = action_space
 
