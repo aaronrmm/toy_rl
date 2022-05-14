@@ -15,14 +15,12 @@ class TinyValueNN:
             params=self.model.parameters(),
             lr=starting_learning_rate,
             weight_decay=weight_decay,
-            # momentum=0.0,
         )
 
     def train(self, input: torch.Tensor, target: torch.Tensor, steps=1):
         for _ in range(steps):
             prediction = self.model(input)
             loss = self.loss_fn(prediction, target)
-            print(loss)
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()

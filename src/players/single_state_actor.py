@@ -40,20 +40,16 @@ class SingleStateActorValueBandit:
     def learn(self):
         acts, scores = zip(*self.memory)
         input: torch.Tensor = torch.stack(acts, dim=0)
-        # input = torch.reshape(input, shape=[-1] + self.action_space)
         scores = torch.Tensor(scores)
         scores = torch.reshape(scores, shape=(-1, 1))
         self.value_estimator.train(
             input=input, target=scores, steps=self.training_steps
         )
-        print("Training...")
         test = torch.eye(self.action_space[0], requires_grad=False)
         test_scores = self.value_estimator.model(test)
         self.best_move = test_scores
         self.best_move = torch.reshape(self.best_move, shape=[-1])
         self.best_move = self.best_move.detach()
-        # self.best_move = torch.randn(size=(11,))
-        print(f"Done training. New best move {self.best_move}")
 
     def reset_memory(self):
         self.memory = []
