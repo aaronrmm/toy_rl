@@ -17,7 +17,7 @@ class MultiStateActorValueBandit:
         self.last_move = None
         self.last_state: torch.Tensor = None
         self.total_memories_learned = 0
-        self.randomize = 0.5
+        self.randomize = 0.25
 
     def get_action(self, observations) -> torch.Tensor:
         self.last_state = observations

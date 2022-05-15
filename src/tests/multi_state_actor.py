@@ -51,7 +51,7 @@ class TestCase_MultiStateActorValueBandit_Plays_ReturnTheNumber(unittest.TestCas
                 action_dims=game.get_action_space(),
                 observation_dims=game.get_observation_space(),
             )
-            games_to_play = 1000
+            games_to_play = 3000
             scores = []
             for _ in tqdm(range(games_to_play)):
                 action = player.get_action(observations=game.get_state())
@@ -65,22 +65,31 @@ class TestCase_MultiStateActorValueBandit_Plays_ReturnTheNumber(unittest.TestCas
                 losers += 1
         assert winners > 0
 
-    def test_return_the_number_game(self):
+    def test_return_the_number_game_scores_1_when_correct(self):
         game = ReturnTheNumber(max=4)
         for number in range(4):
             game.number = number
             observation = game.get_state()
             assert torch.argmax(observation) == number
-            correct_action = torch.zeros(size=[4])
+            correct_action = torch.zeros(size=[game.get_action_space()])
             correct_action[number] += 1
             score = game.act(correct_action)
             assert (
                 score == 1
             ), f"Scoring failed for number={number}, state={observation}, correct action={correct_action}, score={score}"
-            incorrect_action = torch.zeros(size=[4])
+
+    def test_return_the_number_game_scores_0_when_incorrect(self):
+        game = ReturnTheNumber(max=4)
+        for number in range(4):
+            game.number = number
+            observation = game.get_state()
+            assert torch.argmax(observation) == number
+            incorrect_action = torch.zeros(size=[game.get_action_space()])
             incorrect_action[(number + 1) % 4] += 1
             score = game.act(incorrect_action)
-            assert score == 0
+            assert (
+                score == 0
+            ), f"Scoring failed for number={number}, state={observation}, incorrect action={incorrect_action}, score={score}"
 
 
 if __name__ == "__main__":

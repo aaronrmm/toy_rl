@@ -9,8 +9,9 @@ class TinyValueNN:
             torch.nn.Linear(in_features=4, out_features=4),
             torch.nn.LeakyReLU(),
             torch.nn.Linear(in_features=4, out_features=1),
+            torch.nn.Sigmoid(),
         )
-        self.loss_fn = torch.nn.MSELoss()
+        self.loss_fn = torch.nn.BCELoss()
         self.optimizer = torch.optim.Adam(
             params=self.model.parameters(),
             lr=starting_learning_rate,
