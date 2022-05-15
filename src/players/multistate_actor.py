@@ -20,6 +20,7 @@ class MultiStateActorValueBandit:
         self.randomize = 0.5
 
     def get_action(self, observations) -> torch.Tensor:
+        self.last_state = observations
         do_random = random.random() < self.randomize
         # TODO have self.randomize chance be a function of observations - e.g. randomize less in well-known states
         if do_random:
@@ -30,7 +31,7 @@ class MultiStateActorValueBandit:
 
     def give_feedback(self, score):
         if self.last_move is not None:
-            memory = (self.last_move, score)
+            memory = (torch.concat([self.last_state, self.last_move], dim=-1), score)
             self._store_memory(memory)
             self.total_memories_learned += 1
             if self.total_memories_learned % self.learning_frequency == 0:
@@ -60,7 +61,10 @@ class MultiStateActorValueBandit:
     def _get_best_move(self, observations: torch.Tensor):
         test = torch.eye(self.action_dims, requires_grad=False)
         if observations is not None:
-            test = torch.concat([observations, test], dim=1)
+            observations = torch.broadcast_to(
+                observations, size=(len(observations), len(test))
+            )
+            test = torch.concat([observations, test], dim=-1)
         test_scores = self.value_estimator.model(test)
         best_move = test_scores
         best_move = torch.reshape(best_move, shape=[-1])

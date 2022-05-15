@@ -10,16 +10,13 @@ from players.single_state_actor import SingleStateActorValueBandit
 
 
 class TestCase_MultiStateActorValueBandit_Plays_ReturnTheNumber(unittest.TestCase):
-    def test_actions_are_in_bounds(self):
+    def test_actions_can_be_taken(self):
         """
-        Assert all the SingleStateActorValueBandit's action values are between 0 and 1
+        Assert the actor can act on the game
         """
         player = MultiStateActorValueBandit(action_dims=10, observation_dims=0)
         act: torch.Tensor = player.get_action(observations=None)
-        act_max = torch.max(act)
-        act_min = torch.min(act)
-        assert act_max <= 1
-        assert act_min >= 0
+        assert act is not None
 
     def test_scoring_is_possible(self):
         """
@@ -28,14 +25,15 @@ class TestCase_MultiStateActorValueBandit_Plays_ReturnTheNumber(unittest.TestCas
         game = ReturnTheNumber()
         player = MultiStateActorValueBandit(
             action_dims=game.get_action_space(),
-            observation_dims=0,
+            observation_dims=game.get_observation_space(),
         )
         games_to_play = 100
         scores = []
         for _ in tqdm(range(games_to_play)):
-            score = game.act(player.get_action(observations=None))
-            scores.append(score)
+            action = player.get_action(observations=game.get_state())
+            score = game.act(action)
             player.give_feedback(score)
+            scores.append(score)
         print("Scored: " + str(sum(scores)))
         assert sum(scores) > 1, "Game may not be winnable"
         assert sum(scores) < games_to_play, "Game may not be losable"
@@ -50,15 +48,17 @@ class TestCase_MultiStateActorValueBandit_Plays_ReturnTheNumber(unittest.TestCas
         losers = 0
         for _ in range(trials):
             player = MultiStateActorValueBandit(
-                action_dims=game.get_action_space(), observation_dims=0
+                action_dims=game.get_action_space(),
+                observation_dims=game.get_observation_space(),
             )
             games_to_play = 1000
             scores = []
             for _ in tqdm(range(games_to_play)):
-                score = game.act(player.get_action(observations=None))
-                scores.append(score)
+                action = player.get_action(observations=game.get_state())
+                score = game.act(action)
                 player.give_feedback(score)
-            print("Scored: " + str(sum(scores)))
+                scores.append(score)
+            print(f"Scored: {sum(scores)}/{games_to_play}")
             if sum(scores) > games_to_play / 3:
                 winners += 1
             else:
