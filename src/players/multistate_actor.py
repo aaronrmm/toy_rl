@@ -31,7 +31,10 @@ class MultiStateActorValueBandit:
 
     def give_feedback(self, score):
         if self.last_move is not None:
-            memory = (torch.concat([self.last_state, self.last_move], dim=-1), score)
+            memory = (
+                self._concatenate_turns(action=self.last_move, state=self.last_state),
+                score,
+            )
             self._store_memory(memory)
             self.total_memories_learned += 1
             if self.total_memories_learned % self.learning_frequency == 0:
@@ -64,9 +67,12 @@ class MultiStateActorValueBandit:
             observations = torch.broadcast_to(
                 observations, size=(len(observations), len(test))
             )
-            test = torch.concat([observations, test], dim=-1)
+            test = self._concatenate_turns(action=test, state=observations)
         test_scores = self.value_estimator.model(test)
         best_move = test_scores
         best_move = torch.reshape(best_move, shape=[-1])
         best_move = best_move.detach()
         return best_move
+
+    def _concatenate_turns(self, state, action):
+        return torch.concat([state, action], dim=-1)
