@@ -42,7 +42,7 @@ class TestCase_MultiStateActorValueBandit_Plays_ReturnTheNumber(unittest.TestCas
         """
         Assert the game can be learned by an AI
         """
-        game = ReturnTheNumber()
+        game = ReturnTheNumber(max=2)
         trials = 10
         winners = 0
         losers = 0
@@ -59,11 +59,28 @@ class TestCase_MultiStateActorValueBandit_Plays_ReturnTheNumber(unittest.TestCas
                 player.give_feedback(score)
                 scores.append(score)
             print(f"Scored: {sum(scores)}/{games_to_play}")
-            if sum(scores) > games_to_play / 3:
+            if sum(scores) > games_to_play * 3 / 4:
                 winners += 1
             else:
                 losers += 1
         assert winners > 0
+
+    def test_return_the_number_game(self):
+        game = ReturnTheNumber(max=4)
+        for number in range(4):
+            game.number = number
+            observation = game.get_state()
+            assert torch.argmax(observation) == number
+            correct_action = torch.zeros(size=[4])
+            correct_action[number] += 1
+            score = game.act(correct_action)
+            assert (
+                score == 1
+            ), f"Scoring failed for number={number}, state={observation}, correct action={correct_action}, score={score}"
+            incorrect_action = torch.zeros(size=[4])
+            incorrect_action[(number + 1) % 4] += 1
+            score = game.act(incorrect_action)
+            assert score == 0
 
 
 if __name__ == "__main__":
