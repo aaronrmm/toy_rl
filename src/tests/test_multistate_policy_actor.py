@@ -56,9 +56,10 @@ class TestCase_MultiStatePolicyActor_Plays_ReturnTheNumber(unittest.TestCase):
             games_to_play = 3000
             scores = []
             for _ in tqdm(range(games_to_play)):
-                action = player.get_action(observations=game.get_state())
+                game_state = game.get_state().detach()
+                action = player.get_action(observations=game_state)
                 score = game.act(action)
-                player.give_feedback(game.get_state())
+                player.give_feedback(game_state)
                 scores.append(score)
             print(f"Scored: {sum(scores)}/{games_to_play}")
             if sum(scores) > games_to_play * 3 / 4:
