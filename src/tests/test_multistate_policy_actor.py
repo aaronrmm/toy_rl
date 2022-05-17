@@ -13,9 +13,9 @@ class TestCase_MultiStatePolicyActor_Plays_ReturnTheNumber(unittest.TestCase):
         Assert the actor can act on the game
         """
         player = players.multistate_policy_actor.MultiStatePolicyActor(
-            action_dims=10, observation_dims=0
+            action_dims=10, observation_dims=1
         )
-        act: torch.Tensor = player.get_action(observations=None)
+        act: torch.Tensor = player.get_action(observations=torch.zeros(size=[1]))
         assert act is not None
 
     def test_scoring_is_possible(self):
@@ -30,9 +30,11 @@ class TestCase_MultiStatePolicyActor_Plays_ReturnTheNumber(unittest.TestCase):
         games_to_play = 100
         scores = []
         for _ in tqdm(range(games_to_play)):
-            action = player.get_action(observations=game.get_state())
+            state = game.get_state()
+            action = player.get_action(observations=state)
             score = game.act(action)
-            player.give_feedback(score)
+            best_action = state
+            player.give_feedback(best_action.data)
             scores.append(score)
         print("Scored: " + str(sum(scores)))
         assert sum(scores) > 1, "Game may not be winnable"
@@ -56,7 +58,7 @@ class TestCase_MultiStatePolicyActor_Plays_ReturnTheNumber(unittest.TestCase):
             for _ in tqdm(range(games_to_play)):
                 action = player.get_action(observations=game.get_state())
                 score = game.act(action)
-                player.give_feedback(score)
+                player.give_feedback(game.get_state())
                 scores.append(score)
             print(f"Scored: {sum(scores)}/{games_to_play}")
             if sum(scores) > games_to_play * 3 / 4:

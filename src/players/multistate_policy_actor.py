@@ -1,10 +1,11 @@
 import random
 
+import players.networks.losses.policy_losses
 import torch
 
 from players.networks.network import Network
 from players.networks.bodies.TinyFeedForwardBody import TinyFeedForwardBody
-from players.networks.heads import ValueHead
+from players.networks.heads import ValueHead, PolicyHead
 
 
 class MultiStatePolicyActor:
@@ -14,11 +15,10 @@ class MultiStatePolicyActor:
         self.max_memory_size = 500
         self.learning_frequency = 20
         self.training_steps = 5
-        self.value_estimator = Network(
-            body=TinyFeedForwardBody(
-                input_len=observation_dims + action_dims, output_len=4
-            ),
-            head=ValueHead(input_len=4),
+        self.policy_estimator = Network(
+            body=TinyFeedForwardBody(input_len=observation_dims, output_len=4),
+            head=PolicyHead(input_len=4, action_len=action_dims),
+            loss_function=players.networks.losses.policy_losses.CrossEntropyLoss(),
         )
         self.last_move = None
         self.last_state: torch.Tensor = None
@@ -38,7 +38,7 @@ class MultiStatePolicyActor:
     def give_feedback(self, score):
         if self.last_move is not None:
             memory = (
-                self._concatenate_turns(action=self.last_move, state=self.last_state),
+                self.last_state,
                 score,
             )
             self._store_memory(memory)
@@ -51,9 +51,9 @@ class MultiStatePolicyActor:
     def learn(self):
         acts, scores = zip(*self.memory)
         input: torch.Tensor = torch.stack(acts, dim=0)
-        scores = torch.Tensor(scores)
-        scores = torch.reshape(scores, shape=(-1, 1))
-        self.value_estimator.train(
+        scores = torch.stack(scores, dim=0)
+        # scores = torch.reshape(scores, shape=(-1, 1))
+        self.policy_estimator.train(
             input=input, target=scores, steps=self.training_steps
         )
 
@@ -68,17 +68,7 @@ class MultiStatePolicyActor:
             self.memory.append(memory)
 
     def _get_best_move(self, observations: torch.Tensor):
-        test = torch.eye(self.action_dims, requires_grad=False)
-        if observations is not None:
-            observations = torch.broadcast_to(
-                observations, size=(len(observations), len(test))
-            )
-            test = self._concatenate_turns(action=test, state=observations)
-        test_scores = self.value_estimator.model(test)
-        best_move = test_scores
+        best_move: torch.Tensor = self.policy_estimator.model(observations)
         best_move = torch.reshape(best_move, shape=[-1])
         best_move = best_move.detach()
         return best_move
-
-    def _concatenate_turns(self, state, action):
-        return torch.concat([state, action], dim=-1)

@@ -9,6 +9,7 @@ class Network:
         head: nn.Module,
         starting_learning_rate=5e-2,
         weight_decay=1e-5,
+        loss_function=torch.nn.BCELoss(),
     ):
         self.model: nn.Module = nn.Sequential(body, head)
         self.optimizer = torch.optim.Adam(
@@ -16,7 +17,7 @@ class Network:
             lr=starting_learning_rate,
             weight_decay=weight_decay,
         )
-        self.loss_fn = torch.nn.BCELoss()
+        self.loss_fn = loss_function
 
     def train(self, input: torch.Tensor, target: torch.Tensor, steps=1):
         for _ in range(steps):
