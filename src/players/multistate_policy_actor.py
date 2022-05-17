@@ -18,7 +18,9 @@ class MultiStatePolicyActor:
         self.policy_estimator = Network(
             body=TinyFeedForwardBody(input_len=observation_dims, output_len=4),
             head=PolicyHead(input_len=4, action_len=action_dims),
-            loss_function=players.networks.losses.policy_losses.CrossEntropyLoss(),
+            loss_function=players.networks.losses.policy_losses.Poly1CrossEntropyLoss(
+                num_classes=action_dims, reduction="mean"
+            ),
         )
         self.last_move = None
         self.last_state: torch.Tensor = None
