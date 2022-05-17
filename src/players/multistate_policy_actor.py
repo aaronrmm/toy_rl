@@ -1,15 +1,13 @@
 import random
-from typing import List
 
 import torch
 
+from players.networks.network import Network
 from players.networks.bodies.TinyFeedForwardBody import TinyFeedForwardBody
 from players.networks.heads import ValueHead
-from players.networks.network import Network
-from players.networks.smolnn import TinyValueNN
 
 
-class MultiStateActorValueBandit:
+class MultiStatePolicyActor:
     def __init__(self, action_dims: int, observation_dims: int):
         self.action_dims = action_dims
         self.memory = []
