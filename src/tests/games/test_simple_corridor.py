@@ -6,7 +6,7 @@ from ray.rllib.agents.ppo import PPOTrainer
 from games.gym import SimpleCorridor
 
 
-class TestSimpleCorridor(unittest.TestSuite):
+class TestSimpleCorridor(unittest.TestCase):
     game: gym.Env = SimpleCorridor()
 
     def test_is_playable(self):
