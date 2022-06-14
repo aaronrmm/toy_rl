@@ -5,3 +5,5 @@ RUN pip install jupyterlab
 RUN pip install transformers
 RUN pip install datasets
 RUN pip install deepspeed
+RUN pip install "ray[rllib]" torch
+RUN pip install "gym[atari]" "gym[accept-rom-license]" atari_py
