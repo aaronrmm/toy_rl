@@ -33,13 +33,7 @@ class TestCase_Custom_Gym_Agent(unittest.TestCase):
                 else action_space.shape[0]
             )
             self.layers = nn.Sequential(
-                nn.Linear(self.input_size, self.layer_size),
-                nn.ReLU(),
-                nn.Linear(self.layer_size, self.layer_size),
-                nn.ReLU(),
-                nn.Linear(self.layer_size, self.layer_size),
-                nn.ReLU(),
-                nn.Linear(self.layer_size, self.output_size),
+                nn.Linear(self.input_size, self.output_size),
             )
 
         def forward(self, input):
@@ -74,7 +68,7 @@ class TestCase_Custom_Gym_Agent(unittest.TestCase):
         action_logits: torch.Tensor = brain(state)
         print(state, action_logits)
 
-        num_games_to_play = 10000
+        num_games_to_play = 25
         diffs = [0, 0, 0]
         for _ in tqdm(range(num_games_to_play), total=num_games_to_play):
             state = env.reset()
