@@ -68,7 +68,7 @@ class TestCase_Custom_Gym_Agent(unittest.TestCase):
         action_logits: torch.Tensor = brain(state)
         print(state, action_logits)
 
-        num_games_to_play = 1000
+        num_games_to_play = 100
         diffs = [0, 0, 0]
         for _ in tqdm(range(num_games_to_play), total=num_games_to_play):
             state = env.reset()
