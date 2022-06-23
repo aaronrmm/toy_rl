@@ -65,5 +65,5 @@ class RockPaperScissorsTournament(gym.Env):
         # one-hot encode current player for use by the AI
         observation = [0.0, 0.0, 0.0]
         observation[self.current_player_index] += 1.0
-
+        # TODO one-hot-encode in AI code instead of game code
         return observation, reward, done, {}
