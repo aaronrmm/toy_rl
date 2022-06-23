@@ -6,28 +6,29 @@ from gym import spaces
 
 class RockPaperScissorsTournament(gym.Env):
     def __init__(self):
-        self.players = {
-            "Rocco": [1.0, 0.0, 0.0],  # likes rock
-            "XGrizzlyX": [0.0, 1.0, 0],  # loves paper
-            "Sissero": [0.0, 0.0, 1.0],  # likes scissors
-        }
-        self.current_opponent_probabilities = self.players["Rocco"]
-        self.last_player_index = 0
+        self.player_names = ["Rocco", "XGrizzlyX", "Sissero"]
+
+        self.player_probabilities = [
+            [1.0, 0.0, 0.0],  # Rocco likes rock
+            [0.0, 1.0, 0],  # XGrizzlyX loves paper
+            [0.0, 0.0, 1.0],  # Sissero likes scissors
+        ]
+        self.current_player_index: int = 0
 
         # Observations are the opponent player's probabilities
-        self.observation_space = spaces.Box(0, 1, shape=(3,), dtype=float)
+        self.observation_space = spaces.Discrete(3)
 
         # We have 4 actions, corresponding to "rock","paper", and "scissors"
         self.action_space = spaces.Discrete(3)
 
     def reset(self):
         """Resets the episode and returns the initial observation of the new one."""
-        self.last_player_index = (self.last_player_index + 1) % 3
-        self.current_opponent_probabilities = list(self.players.values())[
-            self.last_player_index
-        ]
-        # Return initial observation.
-        return self.current_opponent_probabilities
+        self.current_player_index = random.choice([0, 1, 2])
+
+        # one-hot encode current player for use by the AI
+        observation = [0.0, 0.0, 0.0]
+        observation[self.current_player_index] += 1.0
+        return observation
 
     def step(self, action):
         """Play a single round of tic-tac-toe
@@ -35,25 +36,38 @@ class RockPaperScissorsTournament(gym.Env):
         Returns:
             New observation, reward, done-flag, info-dict (empty).
         """
-        choices = random.choices(
-            population=[0, 1, 2], weights=self.current_opponent_probabilities, k=10
+
+        # Opponent chooses rock, paper, or scissors depending on their tendencies
+        opponent_probabilities = self.player_probabilities[self.current_player_index]
+        opponent_hands = random.choices(
+            population=[0, 1, 2],
+            weights=opponent_probabilities,
+            k=10,  # play 10 rounds (against your one hand)
         )
         reward = 0
-        for hand in choices:
-            if (
-                (action == 0 and hand == 1)
-                or (action == 1 and hand == 2)
-                or (action == 2 and hand == 0)
-            ):
-                reward -= 0.1
-            if (
-                (action == 0 and hand == 2)
-                or (action == 1 and hand == 0)
-                or (action == 2 and hand == 1)
-            ):
-                reward += 0.1
-            else:
-                reward -= 0.05
 
+        # fmt: off
+        for opponent_hand in opponent_hands:
+            if (
+                (action == 0 and opponent_hand == 1)  # their paper beats your rock
+                or (action == 1 and opponent_hand == 2) # their scissors beat your paper
+                or (action == 2 and opponent_hand == 0) # their rock beats your scissors
+            ):
+                reward -= 0.1 # penalty for losing this toss
+            if (
+                (action == 0 and opponent_hand == 2) # your rock beats their scissors
+                or (action == 1 and opponent_hand == 0) # your paper beats their rock
+                or (action == 2 and opponent_hand == 1) # your scissors beat their paper
+            ):
+                reward += 0.1 # reward for winning this toss
+            else:
+                reward -= 0.05 # small penalty to encourage AI not to tie
+
+        # fmt: on
         done = True
-        return self.current_opponent_probabilities, reward, done, {}
+
+        # one-hot encode current player for use by the AI
+        observation = [0.0, 0.0, 0.0]
+        observation[self.current_player_index] += 1.0
+
+        return observation, reward, done, {}

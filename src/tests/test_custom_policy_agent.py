@@ -25,7 +25,7 @@ class TestCase_Custom_Gym_Agent(unittest.TestCase):
     class PolicyNetwork(nn.Module):
         def __init__(self, observation_space: Space, layer_size, action_space: Space):
             super().__init__()
-            self.input_size = observation_space.shape[0]
+            self.input_size = observation_space.n
             self.layer_size = layer_size
             self.output_size = (
                 action_space.n
@@ -68,7 +68,7 @@ class TestCase_Custom_Gym_Agent(unittest.TestCase):
         action_logits: torch.Tensor = brain(state)
         print(state, action_logits)
 
-        num_games_to_play = 25
+        num_games_to_play = 1000
         diffs = [0, 0, 0]
         for _ in tqdm(range(num_games_to_play), total=num_games_to_play):
             state = env.reset()
