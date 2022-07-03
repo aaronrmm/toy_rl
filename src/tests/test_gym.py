@@ -1,31 +1,35 @@
 import unittest
 
 import gym
+from ray.rllib.agents.dqn import DQNTrainer
+from ray.rllib.utils import check_env
 
 
-class TestCase_GymCartPole(unittest.TestCase):
-    def test_cartpole_runs(self):
-        env = gym.make("CartPole-v1")
-        observation, info = env.reset(seed=42, return_info=True)
-
-        for _ in range(100):
-            action = env.action_space.sample()
-            observation, reward, done, info = env.step(action)
-
-            if done:
-                observation, info = env.reset(return_info=True)
-        env.close()
-        assert len(observation) > 0
+class TestCase_GymBlackjack(unittest.TestCase):
+    env_name = "Blackjack-v1"
 
     def test_blackjack_runs(self):
-        env = gym.make("Blackjack-v1")
-        observation, info = env.reset(seed=42, return_info=True)
+        env = gym.make(self.env_name)
+        check_env(env)
+        # env is created, now we can use it:
+        for episode in range(10):
+            obs = env.reset()
+            for step in range(50):
+                action = (
+                    env.action_space.sample()
+                )  # or given a custom model, action = policy(observation)
+                nobs, reward, done, info = env.step(action)
 
-        for _ in range(100):
-            action = env.action_space.sample()
-            observation, reward, done, info = env.step(action)
+    def test_blackjack_is_learnable(self):
+        from ray import tune
 
-            if done:
-                observation, info = env.reset(return_info=True)
-        env.close()
-        assert len(observation) > 0
+        tune.run(
+            DQNTrainer,
+            config={
+                "env": self.env_name,
+                "framework": "torch",
+                "log_level": "INFO",
+                "num_gpus": 0,
+            },
+            time_budget_s=10,
+        )
