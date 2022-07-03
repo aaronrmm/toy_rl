@@ -1,5 +1,4 @@
-FROM pytorch/pytorch:1.11.0-cuda11.3-cudnn8-devel
-#FROM deepspeed/rocm501:ds060_pytorch110
+FROM pytorch/pytorch:1.12.0-cuda11.3-cudnn8-devel
 
 RUN pip install jupyterlab
 RUN pip install transformers
