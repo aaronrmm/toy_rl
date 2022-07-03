@@ -2,7 +2,6 @@ import unittest
 from tqdm.auto import tqdm
 import torch
 
-from games.remember_the_number import RememberTheNumber
 from games.return_the_number import ReturnTheNumber
 from players.multistate_actor import MultiStateActorValueBandit
 from players.random_actor import RandomActor
