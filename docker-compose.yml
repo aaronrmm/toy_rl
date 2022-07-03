@@ -1,12 +1,36 @@
 version: '2.3'
 
 services:
-  toyrl:
+  base_env:
     build:
       context: .
       dockerfile: ./Dockerfile
-    image: toyrl-torch
-    #container_name: toyrl-torch
+    image: toyrl_torch_base_image
+    container_name: toyrl_torch_base_env
+
+  gpu_env_windows:
+    extends:
+      service: base_env
+    image: toyrl_torch_gpu_image
+    container_name: toyrl_torch_gpu_env
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities:
+              - gpu
+
+#  gpu_env_linux:
+#    extends:
+#      service: base_env
+#    runtime: nvidia
+
+  jupyter:
+    extends:
+      service: gpu_env_windows
+      #service: gpu_env_linux
+    image: toyrl_torch_jupyter_image
+    container_name: toyrl_torch_jupyter
     environment:
       PYTHONPATH: /src
       VERSION: "0.1"

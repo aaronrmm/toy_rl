@@ -7,11 +7,15 @@ class Network:
         self,
         body: nn.Module,
         head: nn.Module,
+        embedding_layer: nn.Module = None,
         starting_learning_rate=5e-2,
         weight_decay=1e-5,
         loss_function=torch.nn.BCELoss(),
     ):
-        self.model: nn.Module = nn.Sequential(body, head)
+        if embedding_layer:
+            self.model: nn.Module = nn.Sequential(embedding_layer, body, head)
+        else:
+            self.model: nn.Module = nn.Sequential(body, head)
         self.optimizer = torch.optim.Adam(
             params=self.model.parameters(),
             lr=starting_learning_rate,
